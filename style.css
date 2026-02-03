@@ -1,0 +1,162 @@
+:root {
+  --bg: #0b1220;
+  --text: #e9eefc;
+  --muted: #a8b3d6;
+  --accent: #6ea8fe;
+  --border: rgba(255, 255, 255, 0.14);
+  --panel: rgba(255, 255, 255, 0.03);
+  --panel2: rgba(255, 255, 255, 0.06);
+
+  /* yellow = editable fields */
+  --edit-bg: rgba(214, 160, 0, 0.22);
+  --edit-border: rgba(214, 160, 0, 0.50);
+  --edit-focus: rgba(255, 208, 64, 0.95);
+  --edit-glow: rgba(255, 200, 0, 0.18);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  background: radial-gradient(1000px 600px at 20% 10%, #172243 0%, var(--bg) 60%);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.container { width: min(1500px, calc(100% - 32px)); margin: 0 auto; }
+.muted { color: var(--muted); }
+
+.header {
+  position: sticky; top: 0; z-index: 10;
+  backdrop-filter: blur(8px); background: rgba(11, 18, 32, 0.65);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+.logo { text-decoration: none; color: var(--text); font-weight: 900; letter-spacing: 1px; }
+
+.menu { display: flex; gap: 14px; }
+.menu a { color: var(--text); text-decoration: none; padding: 8px 12px; border-radius: 10px; border: 1px solid transparent; transition: 0.2s; }
+.menu a:hover { border-color: var(--border); background: var(--panel2); }
+
+.hamburger { display: none; background: var(--panel2); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+
+.hero { padding: 40px 0 20px; }
+.section { padding: 20px 0; }
+
+.card {
+  border: 1px solid var(--border); border-radius: 16px; padding: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+}
+
+.companies3 { display: grid; grid-template-columns: repeat(3, minmax(400px, 1fr)); gap: 16px; }
+.company-layout { display: grid; gap: 16px; }
+.company-left { display: grid; gap: 16px; }
+.company-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.company-bottom .net { grid-column: 1 / span 2; }
+
+.block { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--panel); }
+.block-head { padding: 10px 12px; font-weight: 800; background: var(--panel2); border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table td, .data-table th { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.data-table .num { text-align: right; width: 140px; }
+
+.summary-table th { text-align: left; }
+.summary-table th.num { text-align: right; }
+
+.cell-input, .total-input, .name-input, .tax-custom-input {
+  width: 100%; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.06);
+  color: var(--text); padding: 8px 12px; border-radius: 10px; outline: none; transition: 0.2s;
+}
+.cell-input:focus, .name-input:focus { border-color: var(--accent); }
+.auto-field { background: rgba(0, 0, 0, 0.2); color: var(--muted); cursor: not-allowed; }
+
+.total-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(255, 255, 255, 0.02); }
+.total-input { width: 140px; text-align: right; font-weight: 700; }
+
+.wynik .total-input,
+.net .total-input,
+.tax .total-input { width: 100%; }
+
+.field { display: grid; gap: 4px; padding: 8px 12px; }
+.field span { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+.tax-grid { padding: 12px; display: grid; grid-template-columns: 1fr; gap: 12px; }
+.tax-options { padding: 0; display: grid; gap: 8px; }
+.tax-opt { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
+.tax-custom-input { width: 60px; padding: 4px 8px; margin: 0 4px; }
+
+.tax-selected { display: grid; gap: 6px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; }
+.tax-selected-label { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+.wynik .total-input,
+.net .total-input,
+.tax .total-input { width: 100%; }
+
+.name-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.name-field { display: grid; gap: 6px; }
+.name-field span { font-size: 12px; font-weight: 700; color: var(--muted); }
+
+.footer { padding: 40px 0; text-align: center; border-top: 1px solid var(--border); margin-top: 40px; }
+
+@media (max-width: 1200px) { .companies3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 850px) {
+  .companies3 { grid-template-columns: 1fr; }
+  .name-grid { grid-template-columns: 1fr; }
+  .hamburger { display: block; }
+  .menu { display: none; flex-direction: column; position: absolute; top: 60px; right: 20px; background: var(--bg); border: 1px solid var(--border); padding: 10px; }
+  .menu.open { display: flex; }
+}
+
+/* =========================================
+   COMPANY NAMES: yellow only when EMPTY
+   ========================================= */
+.name-input:placeholder-shown {
+  background: var(--edit-bg);
+  border-color: var(--edit-border);
+}
+.name-input:placeholder-shown:focus {
+  border-color: var(--edit-focus);
+  box-shadow: 0 0 0 3px var(--edit-glow);
+}
+
+/* =========================================
+   AMOUNTS: yellow only when needs-fill
+   without (link-*)
+   ========================================= */
+.js-income-body tr:first-child .cell-input.needs-fill:not(.link-pink):not(.link-red):not(.link-green):not(.link-cyan):not(.link-blue):not(.link-violet),
+.js-costs-body .cell-input.needs-fill:not(.link-pink):not(.link-red):not(.link-green):not(.link-cyan):not(.link-blue):not(.link-violet) {
+  background: var(--edit-bg);
+  border-color: var(--edit-border);
+  color: var(--text);
+}
+.js-income-body tr:first-child .cell-input.needs-fill:not(.link-pink):not(.link-red):not(.link-green):not(.link-cyan):not(.link-blue):not(.link-violet):focus,
+.js-costs-body .cell-input.needs-fill:not(.link-pink):not(.link-red):not(.link-green):not(.link-cyan):not(.link-blue):not(.link-violet):focus {
+  border-color: var(--edit-focus);
+  box-shadow: 0 0 0 3px var(--edit-glow);
+}
+
+/* =========================================
+   CIT "Inna": yellow only when selected + needs-fill
+   ========================================= */
+.tax-custom-input.is-custom-active.needs-fill {
+  background: var(--edit-bg);
+  border-color: var(--edit-border);
+}
+.tax-custom-input.is-custom-active.needs-fill:focus {
+  border-color: var(--edit-focus);
+  box-shadow: 0 0 0 3px var(--edit-glow);
+}
+
+/* =========================================
+   TRANSFER COLORS (6 directions)
+   ========================================= */
+.cell-input.link-pink   { background: rgba(217,124,158,0.22); border-color: rgba(217,124,158,0.55); }
+.cell-input.link-red    { background: rgba(209,107,107,0.22); border-color: rgba(209,107,107,0.55); }
+.cell-input.link-green  { background: rgba(111,191,143,0.22); border-color: rgba(111,191,143,0.55); }
+.cell-input.link-cyan   { background: rgba(111,185,201,0.22); border-color: rgba(111,185,201,0.55); }
+.cell-input.link-blue   { background: rgba(122,159,232,0.22); border-color: rgba(122,159,232,0.55); }
+.cell-input.link-violet { background: rgba(154,143,224,0.22); border-color: rgba(154,143,224,0.55); }

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalkulator CIT</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="favicon" href="favicon.ico" />
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <a class="logo" href="#top">CIT CALC</a>
+      <button class="hamburger" id="menuBtn" aria-label="Menu" type="button">☰</button>
+      <nav class="menu" id="menu">
+        <a href="#cit">Kalkulator</a>
+        <a href="#podsumowanie">Podsumowanie</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container">
+        <h1>Kalkulator CIT dla 3 Spółek</h1>
+        <p class="muted">Automatyczne transfery między spółkami i wyliczanie wyniku netto.</p>
+        <p class="text"><b>Edytowalne pola podświetlane są na żółto.<br>Uzupełnione koszty są oznaczane oddzielnym kolorem odpowiadającym polu przychodów właściwej spółki.</b></p>
+      </div>
+    </section>
+
+    <section class="section" id="cit">
+      <div class="container">
+        <div class="card company-settings">
+          <h3>Nazwy Spółek</h3>
+          <div class="name-grid" id="name-inputs-wrapper">
+          </div>
+        </div>
+
+        <div class="companies3" id="companies-wrapper">
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="podsumowanie">
+      <div class="container">
+        <h2>Podsumowanie</h2>
+        <div class="card">
+          <table class="data-table summary-table">
+            <thead>
+              <tr><th>Spółka</th><th class="num">Wynik netto</th></tr>
+            </thead>
+            <tbody id="summary-body">
+            </tbody>
+            <tfoot>
+              <tr><th>Razem</th><th class="num js-summary-total">0,00</th></tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- COMPANY TEMPLATE -->
+  <template id="company-template">
+    <div class="card company">
+      <h3 class="company-title"><span class="js-company-title"></span></h3>
+      <div class="company-layout">
+        <div class="company-left">
+          <div class="block">
+            <div class="block-head">Przychody netto</div>
+            <table class="data-table"><tbody class="js-income-body"></tbody></table>
+            <div class="total-row">
+              <span class="total-label">Suma</span>
+              <input class="total-input js-przychody-total" readonly value="0" />
+            </div>
+          </div>
+
+          <div class="block">
+            <div class="block-head">Koszty netto</div>
+            <table class="data-table"><tbody class="js-costs-body"></tbody></table>
+            <div class="total-row">
+              <span class="total-label">Suma</span>
+              <input class="total-input js-koszty-total" readonly value="0" />
+            </div>
+          </div>
+        </div>
+
+        <div class="company-bottom">
+          <div class="block wynik">
+            <div class="block-head">Wynik brutto</div>
+            <div class="summary-grid">
+              <label class="field"><span>Przychody</span><input class="total-input js-przychody-sum" readonly value="0" /></label>
+              <label class="field"><span>Koszty</span><input class="total-input js-koszty-sum" readonly value="0" /></label>
+              <label class="field"><span>Wynik brutto</span><input class="total-input js-wynik-brutto" readonly value="0" /></label>
+            </div>
+          </div>
+
+          <div class="block tax">
+            <div class="block-head">Stawka CIT</div>
+            <div class="tax-grid">
+              <div class="tax-options">
+                <label class="tax-opt"><input type="radio" value="0.09"> <span class="tax-rate">9%</span></label>
+                <label class="tax-opt"><input type="radio" value="0.19" checked> <span class="tax-rate">19%</span></label>
+                <label class="tax-opt">
+                  <input type="radio" value="custom"> 
+                  <span class="tax-rate">Inna 
+                    <span class="tax-custom"><input class="tax-custom-input" placeholder="0">%</span>
+                  </span>
+                </label>
+
+                <div class="tax-selected">
+                  <div class="tax-selected-label">Podatek</div>
+                  <input class="total-input js-podatek" readonly value="0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block net">
+            <div class="block-head">Wynik netto</div>
+            <div class="summary-grid net-grid">
+              <label class="field"><span>Wynik brutto</span><input class="total-input js-net-brutto" readonly value="0" /></label>
+              <label class="field"><span>Podatek</span><input class="total-input js-net-tax" readonly value="0" /></label>
+              <label class="field"><span>Wynik netto</span><input class="total-input js-wynik-netto" readonly value="0" /></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <footer class="footer container">
+  <small>© <span id="year"></span> emkar67 • <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT</a></small>
+  </footer>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
