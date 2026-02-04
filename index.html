@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kalkulator CIT</title>
+  <title>Kalkulator INT CIT</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="favicon" href="favicon.ico" />
   <script src="main.js" defer></script>
@@ -11,11 +11,24 @@
 <body>
   <header class="header">
     <div class="container nav">
-      <a class="logo" href="#top">CIT CALC</a>
+      <a class="logo" href="#top">INT CIT CALC</a>
       <button class="hamburger" id="menuBtn" aria-label="Menu" type="button">☰</button>
+
       <nav class="menu" id="menu">
-        <a href="#cit">Kalkulator</a>
-        <a href="#podsumowanie">Podsumowanie</a>
+        <!-- Language dropdown -->
+        <div class="lang-wrap">
+          <button class="lang-btn" id="langBtn" type="button" aria-haspopup="true" aria-expanded="false">
+            🗪 Język/Language
+          </button>
+          <div class="lang-dropdown" id="langDropdown" role="menu" aria-label="Wybór języka">
+            <button class="lang-option" type="button" data-lang="pl" role="menuitem">Polski</button>
+            <button class="lang-option" type="button" data-lang="en" role="menuitem">English</button>
+            <button class="lang-option" type="button" data-lang="de" role="menuitem">Deutsch</button>
+          </div>
+        </div>
+
+        <a href="#cit" data-i18n="nav.calculator">Kalkulator</a>
+        <a href="#podsumowanie" data-i18n="nav.summary">Podsumowanie</a>
       </nav>
     </div>
   </header>
@@ -23,37 +36,52 @@
   <main id="top">
     <section class="hero">
       <div class="container">
-        <h1>Kalkulator CIT dla 3 Spółek</h1>
-        <p class="muted">Kalkulacja fakturowania wewnętrznego oraz wyliczanie wyniku brutto, podatku CIT i wyniku netto.</p>
-        <p class="text"><b>Edytowalne pola podświetlane są na żółto.<br>Uzupełnione koszty są oznaczane oddzielnym kolorem odpowiadającym polu przychodów właściwej spółki.</b></p>
+        <h1 data-i18n="hero.title">Kalkulator INT CIT dla 3 Spółek</h1>
+        <p class="muted" data-i18n="hero.subtitle">Kalkulacja fakturowania wewnętrznego oraz wyliczanie wyniku brutto, podatku CIT i wyniku netto.</p>
+
+        <p class="text">
+          <b>
+            <span data-i18n="hero.note1">Edytowalne pola podświetlane są na żółto.</span><br>
+            <span data-i18n="hero.note2">Uzupełnione koszty są oznaczane oddzielnym kolorem odpowiadającym polu przychodów właściwej spółki.</span>
+          </b>
+        </p>
       </div>
     </section>
 
     <section class="section" id="cit">
       <div class="container">
         <div class="card company-settings">
-          <h3>Nazwy Spółek</h3>
+          <h3 data-i18n="section.companyNames">Nazwy Spółek</h3>
           <div class="name-grid" id="name-inputs-wrapper">
+            <!-- Pola nazw generowane przez JS -->
           </div>
         </div>
 
         <div class="companies3" id="companies-wrapper">
+          <!-- Karty spółek generowane przez JS z szablonu -->
         </div>
       </div>
     </section>
 
     <section class="section" id="podsumowanie">
       <div class="container">
-        <h2>Podsumowanie</h2>
+        <h2 data-i18n="section.summary">Podsumowanie</h2>
         <div class="card">
           <table class="data-table summary-table">
             <thead>
-              <tr><th>Spółka</th><th class="num">Wynik netto</th></tr>
+              <tr>
+                <th data-i18n="summary.company">Spółka</th>
+                <th class="num" data-i18n="summary.netResult">Wynik netto</th>
+              </tr>
             </thead>
             <tbody id="summary-body">
+              <!-- Wiersze podsumowania generowane przez JS -->
             </tbody>
             <tfoot>
-              <tr><th>Razem</th><th class="num js-summary-total">0,00</th></tr>
+              <tr>
+                <th data-i18n="summary.total">Razem</th>
+                <th class="num js-summary-total">0,00</th>
+              </tr>
             </tfoot>
           </table>
         </div>
@@ -61,26 +89,27 @@
     </section>
   </main>
 
-  <!-- COMPANY TEMPLATE -->
+  <!-- SZABLON KARTY SPÓŁKI -->
   <template id="company-template">
     <div class="card company">
       <h3 class="company-title"><span class="js-company-title"></span></h3>
+
       <div class="company-layout">
         <div class="company-left">
           <div class="block">
-            <div class="block-head">Przychody netto</div>
+            <div class="block-head" data-i18n="block.netRevenue">Przychody netto</div>
             <table class="data-table"><tbody class="js-income-body"></tbody></table>
             <div class="total-row">
-              <span class="total-label">Suma</span>
+              <span class="total-label" data-i18n="label.total">Suma</span>
               <input class="total-input js-przychody-total" readonly value="0" />
             </div>
           </div>
 
           <div class="block">
-            <div class="block-head">Koszty netto</div>
+            <div class="block-head" data-i18n="block.netCosts">Koszty netto</div>
             <table class="data-table"><tbody class="js-costs-body"></tbody></table>
             <div class="total-row">
-              <span class="total-label">Suma</span>
+              <span class="total-label" data-i18n="label.total">Suma</span>
               <input class="total-input js-koszty-total" readonly value="0" />
             </div>
           </div>
@@ -88,29 +117,31 @@
 
         <div class="company-bottom">
           <div class="block wynik">
-            <div class="block-head">Wynik brutto</div>
+            <div class="block-head" data-i18n="block.gross">Wynik brutto</div>
             <div class="summary-grid">
-              <label class="field"><span>Przychody</span><input class="total-input js-przychody-sum" readonly value="0" /></label>
-              <label class="field"><span>Koszty</span><input class="total-input js-koszty-sum" readonly value="0" /></label>
-              <label class="field"><span>Wynik brutto</span><input class="total-input js-wynik-brutto" readonly value="0" /></label>
+              <label class="field"><span data-i18n="label.revenue">Przychody</span><input class="total-input js-przychody-sum" readonly value="0" /></label>
+              <label class="field"><span data-i18n="label.costs">Koszty</span><input class="total-input js-koszty-sum" readonly value="0" /></label>
+              <label class="field"><span data-i18n="label.gross">Wynik brutto</span><input class="total-input js-wynik-brutto" readonly value="0" /></label>
             </div>
           </div>
 
           <div class="block tax">
-            <div class="block-head">Stawka CIT</div>
+            <div class="block-head" data-i18n="block.citRate">Stawka CIT</div>
             <div class="tax-grid">
               <div class="tax-options">
                 <label class="tax-opt"><input type="radio" value="0.09"> <span class="tax-rate">9%</span></label>
                 <label class="tax-opt"><input type="radio" value="0.19" checked> <span class="tax-rate">19%</span></label>
+
                 <label class="tax-opt">
-                  <input type="radio" value="custom"> 
-                  <span class="tax-rate">Inna 
+                  <input type="radio" value="custom">
+                  <span class="tax-rate">
+                    <span data-i18n="label.other">Inna</span>
                     <span class="tax-custom"><input class="tax-custom-input" placeholder="0">%</span>
                   </span>
                 </label>
 
                 <div class="tax-selected">
-                  <div class="tax-selected-label">Podatek</div>
+                  <div class="tax-selected-label" data-i18n="label.tax">Podatek</div>
                   <input class="total-input js-podatek" readonly value="0" />
                 </div>
               </div>
@@ -118,11 +149,11 @@
           </div>
 
           <div class="block net">
-            <div class="block-head">Wynik netto</div>
+            <div class="block-head" data-i18n="block.net">Wynik netto</div>
             <div class="summary-grid net-grid">
-              <label class="field"><span>Wynik brutto</span><input class="total-input js-net-brutto" readonly value="0" /></label>
-              <label class="field"><span>Podatek</span><input class="total-input js-net-tax" readonly value="0" /></label>
-              <label class="field"><span>Wynik netto</span><input class="total-input js-wynik-netto" readonly value="0" /></label>
+              <label class="field"><span data-i18n="label.gross">Wynik brutto</span><input class="total-input js-net-brutto" readonly value="0" /></label>
+              <label class="field"><span data-i18n="label.tax">Podatek</span><input class="total-input js-net-tax" readonly value="0" /></label>
+              <label class="field"><span data-i18n="label.net">Wynik netto</span><input class="total-input js-wynik-netto" readonly value="0" /></label>
             </div>
           </div>
         </div>
@@ -130,11 +161,8 @@
     </div>
   </template>
 
-  <footer class="footer container">
-  <small>© <span id="year"></span> emkar67 • <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT</a></small>
+    <footer class="footer container">
+    <small>© <span id="year"></span> emkar67 • <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT</a></small>
   </footer>
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
 </body>
 </html>

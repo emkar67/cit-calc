@@ -37,11 +37,29 @@ body {
 .nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
 .logo { text-decoration: none; color: var(--text); font-weight: 900; letter-spacing: 1px; }
 
-.menu { display: flex; gap: 14px; }
+.menu { display: flex; gap: 14px; align-items: center; }
 .menu a { color: var(--text); text-decoration: none; padding: 8px 12px; border-radius: 10px; border: 1px solid transparent; transition: 0.2s; }
 .menu a:hover { border-color: var(--border); background: var(--panel2); }
 
 .hamburger { display: none; background: var(--panel2); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+
+/* =========================
+   LANG DROPDOWN (header)
+   ========================= */
+.lang-wrap { position: relative; display: inline-flex; align-items: center; }
+.lang-btn { color: var(--text); background: transparent; border: 1px solid transparent; padding: 8px 12px; border-radius: 10px; cursor: pointer; transition: 0.2s; font: inherit; }
+.lang-btn:hover { border-color: var(--border); background: var(--panel2); }
+.lang-btn:focus { outline: none; border-color: var(--accent); }
+.lang-dropdown { position: absolute; top: calc(100% + 8px); left: 0; min-width: 180px; background: rgba(11, 18, 32, 0.92); border: 1px solid var(--border); border-radius: 12px; padding: 6px; display: none; z-index: 30; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+.lang-dropdown.open { display: grid; gap: 4px; }
+.lang-option { width: 100%; text-align: left; background: transparent; border: 1px solid transparent; color: var(--text); padding: 8px 10px; border-radius: 10px; cursor: pointer; font: inherit; }
+.lang-option:hover { background: var(--panel2); border-color: var(--border); }
+.lang-option.active { border-color: var(--accent); background: rgba(110,168,254,0.10); }
+/* ========================= */
+
+
+
+
 
 .hero { padding: 40px 0 20px; }
 .section { padding: 20px 0; }
