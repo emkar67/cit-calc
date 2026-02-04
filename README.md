@@ -1,3 +1,5 @@
+https://emkar67.github.io/int-cit-calc/
+
 Changelog:
 
 - 03.02.2026 - Initial release (baseline)
