@@ -46,6 +46,10 @@ const I18N = {
     'company.nameLabel': 'Nazwa Spółki {L}',
     'company.placeholder': 'Spółka {L}',
     'company.defaultName': 'Spółka {L}',
+    'export.csv': 'Eksportuj CSV',
+    'export.excel': 'Eksportuj Excel',
+    'import.csv': 'Importuj CSV',
+    'import.excel': 'Importuj Excel',
   },
   en: {
     'nav.calculator': 'Calculator',
@@ -78,6 +82,10 @@ const I18N = {
     'company.nameLabel': 'Company {L} name',
     'company.placeholder': 'Company {L}',
     'company.defaultName': 'Company {L}',
+    'export.csv': 'Export CSV',
+    'export.excel': 'Export Excel',
+    'import.csv': 'Import CSV',
+    'import.excel': 'Import Excel',
   },
   de: {
     'nav.calculator': 'Rechner',
@@ -110,6 +118,10 @@ const I18N = {
     'company.nameLabel': 'Name der Firma {L}',
     'company.placeholder': 'Firma {L}',
     'company.defaultName': 'Firma {L}',
+    'export.csv': 'CSV exportieren',
+    'export.excel': 'Excel exportieren',
+    'import.csv': 'CSV importieren',
+    'import.excel': 'Excel importieren',
   }
 };
 
@@ -117,6 +129,155 @@ const LANG_KEY = 'calc_lang';
 let currentLang = 'pl';
 
 const SUPPORTED_LANGS = ['pl', 'en', 'de'];
+
+/* =========================
+   EXPORT (CSV + XLSX)
+   ========================= */
+
+function getDateStamp() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* --- AOA collectors (DOM -> Array of Arrays) --- */
+
+// Summary table (podsumowanie)
+function collectSummaryAoA() {
+  const aoa = [[t('summary.company'), t('summary.netResult')]];
+
+  document.querySelectorAll('#summary-body tr').forEach(tr => {
+    const tds = tr.querySelectorAll('td');
+    if (tds.length >= 2) {
+      aoa.push([tds[0].innerText.trim(), tds[1].innerText.trim()]);
+    }
+  });
+
+  const totalLabel =
+    document.querySelector('#podsumowanie .summary-table tfoot th')?.innerText?.trim() || t('summary.total');
+  const totalVal = document.querySelector('.js-summary-total')?.innerText?.trim() || '';
+  aoa.push([totalLabel, totalVal]);
+
+  return aoa;
+}
+
+// Full-ish export: meta + names + each company tables + results + summary
+function collectDataAoA() {
+  const aoa = [];
+  aoa.push(['lang', currentLang]);
+  aoa.push(['exportedAt', new Date().toISOString()]);
+  aoa.push([]);
+
+  // Company names
+  aoa.push([t('section.companyNames')]);
+  COMPANIES.forEach(letter => {
+    const L = letter.toUpperCase();
+    const name = document.getElementById(`name-${letter}`)?.value || t('company.defaultName', { L });
+    aoa.push([L, name]);
+  });
+  aoa.push([]);
+
+  // Per company blocks
+  COMPANIES.forEach(letter => {
+    const L = letter.toUpperCase();
+    const comp = document.getElementById(`spolka-${letter}`);
+    const name = document.getElementById(`name-${letter}`)?.value || t('company.defaultName', { L });
+
+    aoa.push([`${name} (${L})`]);
+
+    // Income table
+    aoa.push([t('block.netRevenue')]);
+    aoa.push(['Label', 'Value']);
+    comp?.querySelectorAll('.js-income-body tr').forEach(tr => {
+      const label = tr.querySelector('td')?.innerText?.trim() || '';
+      const val = tr.querySelector('input')?.value ?? '';
+      aoa.push([label, val]);
+    });
+    aoa.push([]);
+
+    // Costs table
+    aoa.push([t('block.netCosts')]);
+    aoa.push(['Label', 'Value']);
+    comp?.querySelectorAll('.js-costs-body tr').forEach(tr => {
+      const label = tr.querySelector('td')?.innerText?.trim() || '';
+      const val = tr.querySelector('input')?.value ?? '';
+      aoa.push([label, val]);
+    });
+    aoa.push([]);
+
+    // Results
+    aoa.push([t('block.gross')]);
+    aoa.push([t('label.revenue'), comp?.querySelector('.js-przychody-sum')?.value ?? '']);
+    aoa.push([t('label.costs'), comp?.querySelector('.js-koszty-sum')?.value ?? '']);
+    aoa.push([t('label.gross'), comp?.querySelector('.js-wynik-brutto')?.value ?? '']);
+    aoa.push([t('label.tax'), comp?.querySelector('.js-podatek')?.value ?? '']);
+    aoa.push([t('label.net'), comp?.querySelector('.js-wynik-netto')?.value ?? '']);
+    aoa.push([]);
+  });
+
+  // Summary at end
+  aoa.push([t('section.summary')]);
+  aoa.push(...collectSummaryAoA());
+
+  return aoa;
+}
+
+/* --- CSV helpers --- */
+function escapeCsvCell(v, sep) {
+  const s = (v === null || v === undefined) ? '' : String(v);
+  // quote if needed
+  if (s.includes('"') || s.includes('\n') || s.includes('\r') || s.includes(sep)) {
+    return `"${s.replaceAll('"', '""')}"`;
+  }
+  return s;
+}
+
+function aoaToCsv(aoa, sep) {
+  return aoa.map(row => row.map(cell => escapeCsvCell(cell, sep)).join(sep)).join('\r\n');
+}
+
+/* --- Exports --- */
+function exportCSV() {
+  const aoa = collectDataAoA();
+
+  // Separator: w PL/DE zwykle lepiej działa ';' (Excel), w EN ','
+  const sep = (currentLang === 'en') ? ',' : ';';
+
+  const csv = '\ufeff' + aoaToCsv(aoa, sep);
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  downloadBlob(blob, `cit_calc_${getDateStamp()}.csv`);
+}
+
+function exportExcel() {
+  if (typeof XLSX === 'undefined') {
+    alert('Brak biblioteki XLSX (SheetJS). Dodaj xlsx.full.min.js w index.html.');
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  const wsSummary = XLSX.utils.aoa_to_sheet(collectSummaryAoA());
+  XLSX.utils.book_append_sheet(wb, wsSummary, currentLang === 'pl' ? 'Podsumowanie' : 'Summary');
+
+  const wsData = XLSX.utils.aoa_to_sheet(collectDataAoA());
+  XLSX.utils.book_append_sheet(wb, wsData, 'Data');
+
+  XLSX.writeFile(wb, `cit_calc_${getDateStamp()}.xlsx`);
+}
 
 function detectBrowserLang() {
   try {
@@ -505,6 +666,274 @@ function initLanguageUI() {
   });
 }
 
+/* =========================
+   IMPORT (CSV + XLSX)
+   ========================= */
+
+function detectCsvSeparator(text) {
+  const firstLine = (text || '').split(/\r?\n/).find(l => l.trim() !== '') || '';
+  const commas = (firstLine.match(/,/g) || []).length;
+  const semis = (firstLine.match(/;/g) || []).length;
+  return semis > commas ? ';' : ',';
+}
+
+// Prosty parser CSV z obsługą cudzysłowów
+function parseCsvToAoA(text, sep) {
+  let s = (text || '').replace(/^\uFEFF/, ''); // BOM out
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    const next = s[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && next === '"') { // escaped quote
+        cell += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && ch === sep) {
+      row.push(cell);
+      cell = '';
+      continue;
+    }
+
+    if (!inQuotes && (ch === '\n' || ch === '\r')) {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+
+    cell += ch;
+  }
+
+  // ostatnia komórka
+  row.push(cell);
+  rows.push(row);
+
+  // usuń puste końcowe wiersze
+  while (rows.length && rows[rows.length - 1].every(c => String(c ?? '').trim() === '')) rows.pop();
+  return rows;
+}
+
+function isEmptyRow(r) {
+  if (!r) return true;
+  return r.every(c => String(c ?? '').trim() === '');
+}
+
+function extractLetterFromHeaderCell(v) {
+  const s = String(v ?? '').trim();
+  const m = s.match(/\(([ABC])\)\s*$/); // np. "Spółka A (A)"
+  return m ? m[1] : null;
+}
+
+function findNextLabelValueHeader(aoa, startIndex) {
+  for (let i = startIndex; i < aoa.length; i++) {
+    const r = aoa[i] || [];
+    if (String(r[0] ?? '').trim() === 'Label' && String(r[1] ?? '').trim() === 'Value') return i;
+  }
+  return -1;
+}
+
+function takeTableRowsUntilBlank(aoa, startIndex) {
+  const out = [];
+  for (let i = startIndex; i < aoa.length; i++) {
+    const r = aoa[i] || [];
+    if (isEmptyRow(r)) break;
+    out.push(r);
+  }
+  return out;
+}
+
+function setFormattedValueById(id, rawVal) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const n = parseNum(rawVal);          // używa Twojego „elastycznego” parsera
+  el.value = formatNum(n);             // formatuje wg currentLang
+}
+
+function setSupplierCosts(letterLower, values) {
+  const comp = document.getElementById(`spolka-${letterLower}`);
+  if (!comp) return;
+
+  const others = COMPANIES
+    .map(x => x.toUpperCase())
+    .filter(L => L !== letterLower.toUpperCase()); // np. dla 'a' -> ['B','C']
+
+  others.forEach((targetL, idx) => {
+    const inp = comp.querySelector(`[data-direction="dostawca"][data-link="${targetL}"]`);
+    if (!inp) return;
+    const n = parseNum(values[idx] ?? 0);
+    inp.value = formatNum(n);
+  });
+}
+
+function setTaxFromGrossAndTax(letterLower, grossRaw, taxRaw) {
+  const gross = parseNum(grossRaw);
+  const tax = parseNum(taxRaw);
+  if (!(gross > 0)) return; // nie da się sensownie wyliczyć stawki
+
+  const rate = tax / gross; // np. 0.19
+  if (!Number.isFinite(rate) || rate < 0) return;
+
+  const comp = document.getElementById(`spolka-${letterLower}`);
+  if (!comp) return;
+
+  const tol = 0.003; // tolerancja
+  const r09 = Math.abs(rate - 0.09) < tol;
+  const r19 = Math.abs(rate - 0.19) < tol;
+
+  const setRadio = (val) => {
+    const r = comp.querySelector(`input[type="radio"][value="${val}"]`);
+    if (r) r.checked = true;
+  };
+
+  if (r09) {
+    setRadio('0.09');
+  } else if (r19) {
+    setRadio('0.19');
+  } else {
+    setRadio('custom');
+    const custom = comp.querySelector('.tax-custom-input');
+    if (custom) custom.value = formatNum(rate * 100);
+  }
+}
+
+function applyImportFromAoA(aoa) {
+  if (!Array.isArray(aoa) || !aoa.length) return;
+
+  // 1) Nazwy spółek (heurystyka: szukamy pierwszych wierszy A/B/C + nazwa)
+  const names = {};
+  for (let i = 0; i < Math.min(aoa.length, 80); i++) {
+    const r = aoa[i] || [];
+    const k = String(r[0] ?? '').trim();
+    const v = String(r[1] ?? '').trim();
+    if ((k === 'A' || k === 'B' || k === 'C') && v) names[k] = v;
+  }
+  COMPANIES.forEach(letter => {
+    const L = letter.toUpperCase();
+    const inp = document.getElementById(`name-${letter}`);
+    if (inp && names[L]) inp.value = names[L];
+  });
+
+  // 2) Dane per spółka
+  for (let i = 0; i < aoa.length; i++) {
+    const r = aoa[i] || [];
+    if (r.length !== 1) continue;
+
+    const letter = extractLetterFromHeaderCell(r[0]);
+    if (!letter) continue;
+
+    const letterLower = letter.toLowerCase();
+
+    // revenue table
+    const revHdr = findNextLabelValueHeader(aoa, i + 1);
+    if (revHdr === -1) continue;
+    const revRows = takeTableRowsUntilBlank(aoa, revHdr + 1);
+
+    // pierwszy wiersz w przychodach = Odbiorcy zewnętrzni (editable)
+    if (revRows[0]) setFormattedValueById(`${letterLower}_inc_0`, revRows[0][1]);
+
+    // costs table (kolejny Label/Value po revenue)
+    const costHdr = findNextLabelValueHeader(aoa, revHdr + 1);
+    if (costHdr === -1) continue;
+    const costRows = takeTableRowsUntilBlank(aoa, costHdr + 1);
+
+    // pierwszy wiersz w kosztach = Dostawcy zewnętrzni (editable)
+    if (costRows[0]) setFormattedValueById(`${letterLower}_cost_0`, costRows[0][1]);
+
+    // kolejne wiersze kosztów = dostawcy do innych spółek (editable)
+    const supplierVals = costRows.slice(1).map(x => x?.[1]);
+    setSupplierCosts(letterLower, supplierVals);
+
+    // wyniki: po kosztach powinien być blok "gross" (1 komórka) + 5 wierszy par
+    // bierzemy 3-ci (gross) i 4-ty (tax) z tych par (order był stały w eksporcie)
+    let k = costHdr + 1 + costRows.length;
+    while (k < aoa.length && isEmptyRow(aoa[k])) k++;
+    // tytuł bloku
+    if (k < aoa.length && (aoa[k] || []).length === 1) {
+      const pairs = [];
+      for (let p = 1; p <= 5; p++) {
+        const rr = aoa[k + p] || [];
+        if (rr.length >= 2) pairs.push(rr);
+      }
+      // pairs: [revenue, costs, gross, tax, net]
+      if (pairs[2] && pairs[3]) {
+        setTaxFromGrossAndTax(letterLower, pairs[2][1], pairs[3][1]);
+      }
+    }
+  }
+
+  // 3) przeliczenie + etykiety
+  recalcAll();
+}
+
+function initImportUI() {
+  const csvInput = document.createElement('input');
+  csvInput.type = 'file';
+  csvInput.accept = '.csv,text/csv';
+  csvInput.style.display = 'none';
+
+  const xlsxInput = document.createElement('input');
+  xlsxInput.type = 'file';
+  xlsxInput.accept =
+    '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' +
+    '.xls,application/vnd.ms-excel';
+  xlsxInput.style.display = 'none';
+
+  document.body.appendChild(csvInput);
+  document.body.appendChild(xlsxInput);
+
+  document.getElementById('importCsvBtn')?.addEventListener('click', () => {
+    csvInput.value = '';
+    csvInput.click();
+  });
+
+  document.getElementById('importXlsxBtn')?.addEventListener('click', () => {
+    xlsxInput.value = '';
+    xlsxInput.click();
+  });
+
+  csvInput.addEventListener('change', async () => {
+    const file = csvInput.files?.[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const sep = detectCsvSeparator(text);
+    const aoa = parseCsvToAoA(text, sep);
+    applyImportFromAoA(aoa);
+  });
+
+  xlsxInput.addEventListener('change', async () => {
+    const file = xlsxInput.files?.[0];
+    if (!file) return;
+
+    if (typeof XLSX === 'undefined') {
+      alert('Brak biblioteki XLSX (SheetJS). Dodaj xlsx.full.min.js w index.html.');
+      return;
+    }
+
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array' });
+
+    const sheetName = wb.SheetNames.includes('Data') ? 'Data' : wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+    const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
+
+    applyImportFromAoA(aoa);
+  });
+}
+
 /* --- Inicjalizacja --- */
 document.addEventListener("DOMContentLoaded", () => {
   currentLang = 'en';
@@ -530,6 +959,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (e.target.matches('.cell-input, .name-input, .tax-custom-input')) recalcAll();
   });
+
+  document.getElementById('exportCsvBtn')?.addEventListener('click', exportCSV);
+  document.getElementById('exportXlsxBtn')?.addEventListener('click', exportExcel);
 
   document.addEventListener('change', (e) => {
     if (e.target.type === 'radio') recalcAll();
@@ -558,7 +990,8 @@ document.addEventListener("DOMContentLoaded", () => {
       e.target.value = formatNum(parseNum(e.target.value));
     }
   });
-
+  
+  initImportUI();
   initLanguageUI();
   recalcAll();
 });

@@ -74,6 +74,7 @@ body {
 .company-left { display: grid; gap: 16px; }
 .company-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .company-bottom .net { grid-column: 1 / span 2; }
+.company-settings{ margin-bottom: 16px; }
 
 .block { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--panel); }
 .block-head { padding: 10px 12px; font-weight: 800; background: var(--panel2); border-bottom: 1px solid var(--border); font-size: 0.9rem; }
@@ -178,3 +179,85 @@ body {
 .cell-input.link-cyan   { background: rgba(111,185,201,0.22); border-color: rgba(111,185,201,0.55); }
 .cell-input.link-blue   { background: rgba(122,159,232,0.22); border-color: rgba(122,159,232,0.55); }
 .cell-input.link-violet { background: rgba(154,143,224,0.22); border-color: rgba(154,143,224,0.55); }
+
+/* =========================
+   EXPORT BUTTONS
+   ========================= */
+.export-actions{
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  transition: 0.2s;
+}
+
+.btn:hover{
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.22);
+}
+
+.btn:active{
+  transform: translateY(1px);
+}
+
+@media (max-width: 650px){
+  .export-actions .btn{ flex: 1; }
+}
+
+.btn-ico{
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+}
+.btn-ico svg{
+  width: 18px;
+  height: 18px;
+  display: block;
+  opacity: 0.9;
+}
+
+.btn{ display:inline-flex; align-items:center; gap:8px; }
+.btn-ico{ width:18px; height:18px; display:inline-flex; opacity:.9; }
+.btn-ico .ico{ width:18px; height:18px; display:block; }
+
+/* =========================
+   SECTION HEAD (title + actions)
+   ========================= */
+.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin: 18px 0 12px;
+}
+
+.section-title{
+  margin: 0;
+}
+
+.section-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+@media (max-width: 650px){
+  .section-head{ align-items: stretch; }
+  .section-actions{ width: 100%; }
+  .section-actions .btn{ flex: 1; }
+}
