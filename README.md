@@ -8,4 +8,5 @@ Changelog:
 
 Roadmap:
 
-TBD
+localStorage implementation 4 input values
+reset button
