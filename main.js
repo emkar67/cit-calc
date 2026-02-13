@@ -50,6 +50,7 @@ const I18N = {
     'export.excel': 'Eksportuj Excel',
     'import.csv': 'Importuj CSV',
     'import.excel': 'Importuj Excel',
+    'clear.data': 'Wyczyść dane',
   },
   en: {
     'nav.calculator': 'Calculator',
@@ -86,6 +87,7 @@ const I18N = {
     'export.excel': 'Export Excel',
     'import.csv': 'Import CSV',
     'import.excel': 'Import Excel',
+    'clear.data': 'Clear data',
   },
   de: {
     'nav.calculator': 'Rechner',
@@ -122,6 +124,7 @@ const I18N = {
     'export.excel': 'Excel exportieren',
     'import.csv': 'CSV importieren',
     'import.excel': 'Excel importieren',
+    'clear.data': 'Daten löschen',
   }
 };
 
@@ -151,6 +154,46 @@ function downloadBlob(blob, filename) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+function clearAllData() {
+  // 1) skasuj zapis kalkulatora (zostaw język)
+  if (typeof STATE_KEY !== 'undefined') {
+    localStorage.removeItem(STATE_KEY);
+  }
+
+  // 2) wyczyść nazwy spółek
+  COMPANIES.forEach(letter => {
+    const nameEl = document.getElementById(`name-${letter}`);
+    if (nameEl) nameEl.value = '';
+  });
+
+  // 3) wyczyść wszystkie edytowalne pola kwot (nie readonly)
+  document.querySelectorAll('.cell-input:not([readonly])').forEach(inp => {
+    inp.value = formatNum(0);
+  });
+
+  // 4) reset CIT: 19% + wyczyść "Inna"
+  COMPANIES.forEach(letter => {
+    const comp = document.getElementById(`spolka-${letter}`);
+    if (!comp) return;
+
+    const r19 = comp.querySelector('input[type="radio"][value="0.19"]');
+    if (r19) r19.checked = true;
+
+    const custom = comp.querySelector('.tax-custom-input');
+    if (custom) custom.value = formatNum(0);
+  });
+
+  // 5) przelicz i odśwież UI (transfery/kolory/podsumowanie/needs-fill)
+  recalcAll();
+
+  // 6) (opcjonalnie) zapisz "wyczyszczony" stan, żeby po odświeżeniu było to samo
+  if (typeof getCalcState === 'function') {
+    try {
+      localStorage.setItem(STATE_KEY, JSON.stringify(getCalcState()));
+    } catch (_) {}
+  }
 }
 
 /* --- AOA collectors (DOM -> Array of Arrays) --- */
@@ -934,6 +977,150 @@ function initImportUI() {
   });
 }
 
+const STATE_KEY = 'cit_calc_state_v1';
+
+function getCalcState() {
+  const state = {
+    version: 1,
+    lang: currentLang, // opcjonalnie
+    names: {},
+    valuesById: {},
+    suppliers: {},      // koszty do innych spółek (dostawca)
+    tax: {}             // stawki CIT
+  };
+
+  // nazwy spółek
+  COMPANIES.forEach(letter => {
+    state.names[letter] = document.getElementById(`name-${letter}`)?.value ?? '';
+  });
+
+  // wartości po ID (zewn. przychody/koszty + ewentualnie inne editable po ID)
+  COMPANIES.forEach(letter => {
+    const inc0 = document.getElementById(`${letter}_inc_0`);
+    const cost0 = document.getElementById(`${letter}_cost_0`);
+    if (inc0) state.valuesById[inc0.id] = inc0.value;
+    if (cost0) state.valuesById[cost0.id] = cost0.value;
+  });
+
+  // koszty “dostawca” (editable) — zapisujemy po literach
+  COMPANIES.forEach(letter => {
+    const comp = document.getElementById(`spolka-${letter}`);
+    if (!comp) return;
+    const arr = [];
+    comp.querySelectorAll('[data-direction="dostawca"]').forEach(inp => {
+      arr.push({
+        link: inp.dataset.link, // "A/B/C"
+        value: inp.value
+      });
+    });
+    state.suppliers[letter] = arr;
+  });
+
+  // CIT radios + custom
+  COMPANIES.forEach(letter => {
+    const comp = document.getElementById(`spolka-${letter}`);
+    if (!comp) return;
+
+    const checked = comp.querySelector('input[type="radio"]:checked')?.value ?? '0.19';
+    const customVal = comp.querySelector('.tax-custom-input')?.value ?? '';
+
+    state.tax[letter] = {
+      selected: checked,   // "0.09" | "0.19" | "custom"
+      custom: customVal
+    };
+  });
+
+  return state;
+}
+
+function applyCalcState(state) {
+  if (!state || typeof state !== 'object') return;
+
+  // (opcjonalnie) język
+  if (state.lang && typeof setLang === 'function') {
+    // jeśli masz setLang zamknięte w initLanguageUI, to ten fragment pomiń
+  }
+
+  // nazwy spółek
+  if (state.names) {
+    COMPANIES.forEach(letter => {
+      const el = document.getElementById(`name-${letter}`);
+      if (el && typeof state.names[letter] === 'string') el.value = state.names[letter];
+    });
+  }
+
+  // wartości po ID
+  if (state.valuesById) {
+    Object.entries(state.valuesById).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    });
+  }
+
+  // koszty dostawca
+  if (state.suppliers) {
+    COMPANIES.forEach(letter => {
+      const comp = document.getElementById(`spolka-${letter}`);
+      if (!comp) return;
+
+      const list = state.suppliers[letter];
+      if (!Array.isArray(list)) return;
+
+      list.forEach(item => {
+        const link = item?.link;
+        const value = item?.value;
+        if (!link) return;
+        const inp = comp.querySelector(`[data-direction="dostawca"][data-link="${link}"]`);
+        if (inp && typeof value === 'string') inp.value = value;
+      });
+    });
+  }
+
+  // CIT
+  if (state.tax) {
+    COMPANIES.forEach(letter => {
+      const comp = document.getElementById(`spolka-${letter}`);
+      if (!comp) return;
+
+      const t = state.tax[letter];
+      if (!t) return;
+
+      const radio = comp.querySelector(`input[type="radio"][value="${t.selected}"]`);
+      if (radio) radio.checked = true;
+
+      const custom = comp.querySelector('.tax-custom-input');
+      if (custom && typeof t.custom === 'string') custom.value = t.custom;
+    });
+  }
+
+  // przelicz
+  recalcAll();
+}
+
+function loadCalcState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    applyCalcState(state);
+  } catch (e) {
+    console.warn('Nie udało się wczytać stanu:', e);
+  }
+}
+
+let saveTimer = null;
+function scheduleSaveCalcState() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      const state = getCalcState();
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.warn('Nie udało się zapisać stanu:', e);
+    }
+  }, 250); // debounce
+}
+
 /* --- Inicjalizacja --- */
 document.addEventListener("DOMContentLoaded", () => {
   currentLang = 'en';
@@ -942,6 +1129,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   applyTranslations();
   renderCompanies();
+
+  document.getElementById('clearDataBtn')?.addEventListener('click', () => {
+  clearAllData();
+  });
 
   document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -990,8 +1181,23 @@ document.addEventListener("DOMContentLoaded", () => {
       e.target.value = formatNum(parseNum(e.target.value));
     }
   });
+
+    document.addEventListener('input', (e) => {
+    if (e.target.matches('.cell-input, .name-input, .tax-custom-input')) {
+      recalcAll();
+      scheduleSaveCalcState();
+    }
+  });
+
+  document.addEventListener('change', (e) => {
+    if (e.target.type === 'radio') {
+      recalcAll();
+      scheduleSaveCalcState();
+    }
+  });
   
   initImportUI();
   initLanguageUI();
+  loadCalcState();
   recalcAll();
 });
