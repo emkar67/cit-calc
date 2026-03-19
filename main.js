@@ -1108,6 +1108,32 @@ function loadCalcState() {
   }
 }
 
+async function resetCache() {
+  try {
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    if ('caches' in window) {
+      const cacheKeys = await caches.keys();
+      await Promise.all(cacheKeys.map(key => caches.delete(key)));
+    }
+
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(reg => reg.unregister()));
+    }
+  } catch (e) {
+    console.warn('Nie udało się zresetować cache:', e);
+  } finally {
+    window.location.reload();
+  }
+}
+
 let saveTimer = null;
 function scheduleSaveCalcState() {
   if (saveTimer) clearTimeout(saveTimer);
@@ -1153,6 +1179,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById('exportCsvBtn')?.addEventListener('click', exportCSV);
   document.getElementById('exportXlsxBtn')?.addEventListener('click', exportExcel);
+  document.getElementById('clearCacheBtn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    resetCache();
+  });
 
   document.addEventListener('change', (e) => {
     if (e.target.type === 'radio') recalcAll();
