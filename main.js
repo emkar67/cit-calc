@@ -18,8 +18,8 @@ const I18N = {
   pl: {
     'nav.calculator': 'Kalkulator',
     'nav.summary': 'Podsumowanie',
-    'hero.title': 'Kalkulator INT CIT dla 3 Spółek',
-    'hero.subtitle': 'Kalkulacja fakturowania wewnętrznego oraz wyliczanie wyniku brutto, podatku CIT i wyniku netto.',
+    'hero.title': 'CIT + Fakturowanie Wewnętrzne dla 3 Spółek',
+    'hero.subtitle': 'Symulacja fakturowania wewnętrznego oraz wyliczanie wyniku brutto, podatku CIT i wyniku netto.',
     'hero.note1': 'Edytowalne pola podświetlane są na żółto.',
     'hero.note2': 'Uzupełnione koszty są oznaczane oddzielnym kolorem odpowiadającym polu przychodów właściwej spółki.',
     'section.companyNames': 'Nazwy Spółek',
@@ -55,8 +55,8 @@ const I18N = {
   en: {
     'nav.calculator': 'Calculator',
     'nav.summary': 'Summary',
-    'hero.title': 'INT CIT Calculator for 3 Companies',
-    'hero.subtitle': 'Internal billing calculation and automated computation of gross profit, corporate income tax (CIT), and net profit.',
+    'hero.title': 'CIT & Internal Billing for 3 Companies',
+    'hero.subtitle': 'Internal billing simulation and calculation of gross profit, corporate income tax (CIT), and net profit.',
     'hero.note1': 'Editable fields are highlighted in yellow.',
     'hero.note2': 'Entered costs are marked with a separate color matching the corresponding revenue field.',
     'section.companyNames': 'Company Names',
@@ -92,8 +92,8 @@ const I18N = {
   de: {
     'nav.calculator': 'Rechner',
     'nav.summary': 'Zusammenfassung',
-    'hero.title': 'Intern. KSt-Rechner für 3 Unternehmen',
-    'hero.subtitle': 'Interne Verrechnung und automatische Berechnung von Bruttoergebnis, Körperschaftsteuer (KSt) und Nettoergebnis.',
+    'hero.title': 'KSt & interne Verrechnung für 3 Unternehmen',
+    'hero.subtitle': 'Simulation der internen Verrechnung sowie Berechnung von Bruttoergebnis, Körperschaftsteuer (KSt) und Nettoergebnis.',
     'hero.note1': 'Editierbare Felder sind gelb hervorgehoben.',
     'hero.note2': 'Eingegebene Kosten werden farblich passend zum entsprechenden Erlösfeld markiert.',
     'section.companyNames': 'Firmennamen',
