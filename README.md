@@ -1,4 +1,4 @@
-https://emkar67.github.io/int-cit-calc/
+https://emkar67.github.io/groupcit/
 
 Changelog:
 
@@ -7,6 +7,7 @@ Changelog:
 - 06.02.2026 - Added import/export for csv and Excel files, alongside minor ui/translation adjustments
 - 13.02.2026 - localStorage implemented, input values are now stored locally plus simple "clear data" button
 - 19.03.2026 - reset cache button + link color formatting
+- 31.03.2026 - changed repo name
 
 Roadmap:
 
